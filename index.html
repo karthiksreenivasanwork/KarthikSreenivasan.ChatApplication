@@ -1,0 +1,60 @@
+<html>
+<head>
+    <!-- CSS only -->
+    <link href="./node_modules/bootstrap/dist/css/bootstrap.min.css"
+          rel="stylesheet" />
+
+    <!-- JavaScript Bundle with Popper -->
+    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+            crossorigin="anonymous"></script>
+
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+
+    <!-- Application CSS -->
+    <link rel="stylesheet" href="./assets/css/index.css" />
+
+    <!--
+      Execute after the page has been rendered.
+    -->
+    <script defer>
+        $(() => {
+            $("#send").click(() => {
+
+                if ($('.hide-container')[0]) {
+                    $("#messages").removeClass("hide-container");
+                    $("#messages").addClass("show-container");
+                }
+                addMessages({ name: "Karthik", message: "Hello" });
+            });
+        });
+
+        function addMessages(message) {
+            $("#messages").append(
+                `<h4> ${message.name} </h4> <p> ${message.message}</p>`
+            );
+        }
+    </script>
+</head>
+  <body>
+    <div class="flex-container">
+      <div class="container flex-chat-container">
+        <br />
+        <div class="col-md-5">
+          <div class="p-5 bg-dark text-white border rounded-3">
+            <h1 class="display-4">Send Message</h1>
+            <br />
+            <input class="form-control" placeholder="Name" />
+            <br />
+            <button id="send" class="btn btn-outline-light">Send</button>
+          </div>
+          <div id="messages" class="p-5 bg-secondary text-white border rounded-3 chat-text-container hide-container"></div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

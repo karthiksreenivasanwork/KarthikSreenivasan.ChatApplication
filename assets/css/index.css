@@ -1,0 +1,24 @@
+.flex-container {
+  display: flex;
+  justify-content: center;
+}
+
+.flex-chat-container {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+
+.chat-text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hide-container {
+  display: none;
+}
+
+.show-container {
+  display: block;
+}
