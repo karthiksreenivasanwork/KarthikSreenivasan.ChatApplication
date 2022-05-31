@@ -1,18 +1,28 @@
 <html>
-<head>
+  <head>
     <!-- CSS only -->
-    <link href="./node_modules/bootstrap/dist/css/bootstrap.min.css"
-          rel="stylesheet" />
+    <link
+      href="./node_modules/bootstrap/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
     <!-- JavaScript Bundle with Popper -->
-    <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
-            crossorigin="anonymous"></script>
+    <script
+      src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+      crossorigin="anonymous"
+    ></script>
 
     <!-- JQuery -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-            crossorigin="anonymous"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.min.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!--
+      socket.io
+    -->
+    <script src="/socket.io/socket.io.js"></script>
 
     <!-- Application CSS -->
     <link rel="stylesheet" href="./assets/css/index.css" />
@@ -21,24 +31,68 @@
       Execute after the page has been rendered.
     -->
     <script defer>
-        $(() => {
-            $("#send").click(() => {
+      let socket = io();
 
-                if ($('.hide-container')[0]) {
-                    $("#messages").removeClass("hide-container");
-                    $("#messages").addClass("show-container");
-                }
-                addMessages({ name: "Karthik", message: "Hello" });
-            });
+      $(() => {
+        //When the document is ready
+        $("#send").click(() => {
+          let message = {
+            name: $("#name").val(),
+            message: $("#chatmessage").val(),
+          };
+          postMessage(message);
         });
+        getMessages(); //When the document loads, load any existing messages from the server.
+      });
 
-        function addMessages(message) {
-            $("#messages").append(
-                `<h4> ${message.name} </h4> <p> ${message.message}</p>`
-            );
+      /**
+       * Event listener to update the message casted by the server to the clients.
+       *
+       * on function parameters
+       * ----------------------
+       * Event name: message
+       * Event parameters: Callback function -> addMessage
+       * Please note that since the signature of the call back is similar to the addMessage,
+       * we have used the below syntax.
+       */
+      socket.on("message", addMessage);
+
+      /**
+       * Append a single message in the to the user interface.
+       * */
+      function addMessage(message) {
+        if ($(".hide-container")[0]) {
+          $("#messages").removeClass("hide-container");
+          $("#messages").addClass("show-container");
         }
+
+        $("#messages").append(
+          `<h4> ${message.name} </h4> <p> ${message.message}</p>`
+        );
+      }
+
+      /**
+       * Post a message to the server endpoint - /messages.
+       * */
+      function postMessage(message) {
+        $.post("/message", message);
+      }
+
+      /**
+       * Get all message from the server endpoint - /messages
+       * */
+      function getMessages() {
+        $("#messages").empty(); //Clear the existing messages before populating new messages.
+        $.get("/messages", (data) => {
+          /**
+           * Since the signature of the foreach and the addMessage function are the same,
+           * we are writing a shorter verision of the foreach as -> forEach(addMessage)
+           * */
+          data.forEach(addMessage);
+        });
+      }
     </script>
-</head>
+  </head>
   <body>
     <div class="flex-container">
       <div class="container flex-chat-container">
@@ -47,14 +101,22 @@
           <div class="p-5 bg-dark text-white border rounded-3">
             <h1 class="display-4">Send Message</h1>
             <br />
-            <input class="form-control" placeholder="Name" />
+            <input id="name" class="form-control" placeholder="Name" />
+            <br />
+            <textarea
+              id="chatmessage"
+              class="form-control"
+              placeholder="Message"
+            ></textarea>
             <br />
             <button id="send" class="btn btn-outline-light">Send</button>
           </div>
-          <div id="messages" class="p-5 bg-secondary text-white border rounded-3 chat-text-container hide-container"></div>
+          <div
+            id="messages"
+            class="p-5 bg-secondary text-white border rounded-3 chat-text-container hide-container"
+          ></div>
         </div>
       </div>
     </div>
-
   </body>
 </html>
