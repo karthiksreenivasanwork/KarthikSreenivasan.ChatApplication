@@ -1,6 +1,6 @@
 # Demo chat application using Node.js
 
-This is a demo chat application with Node.js using socket.io, Bootstrap 5.0, JQuery, and Mongo DB.
+This is a demo chat application developed using Node.js with socket.io's event-driven JavaScript library, Bootstrap 5.0, JQuery, and Mongo DB.
 
 ## My LinkedIn Profile | Profile Name: karthiksreenivasan
 
