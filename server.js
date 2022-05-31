@@ -36,6 +36,7 @@ let dbUrl = "";
 
 /**
  * Model definition to store our message to the database.
+ * Mongoose manages the ID generation and maintenance for each message
  */
 let Message = mongoose.model("Message", {
   name: String,
@@ -60,23 +61,22 @@ app.get("/messages", (req, res) => {
  * An HTTP post method that handles a new message sent by a client by adding it to a message collection.
  * Additionally, it informs all the clients using socket.io to cascade the new message.
  */
-app.post("/message", (req, res) => {
+app.post("/message", async (req, res) => {
   let message = new Message(req.body);
-  message.save((err) => {
-    if (err) {
-      console.log(
-        "Unable to save the information to the database. Please find the error appended : ",
-        err
-      );
-      sendStatus(500);
-    } else {
-      /**
-       * Update the chat message to all the client.
-       */
-      io.emit("message", req.body);
-      res.sendStatus(200);
-    }
-  });
+  let savedMessage = await message.save();
+  let censored = await Message.findOne({ message: "badword" }); // Filter any bad words here
+  if (censored) await Message.deleteOne({ _id: censored.id });
+  else io.emit("message", req.body); // Update the chat message to all the client.
+  res.sendStatus(200);
+
+  // .catch((err) => {
+  //   console.log(
+  //     "Unable to save the information to the database. Please find the error appended : ",
+  //     err
+  //   );
+  //   res.sendStatus(500);
+  //   return console.error(err);
+  // });
 });
 
 /**
