@@ -8,6 +8,12 @@ let http = require("http").Server(app); //Node HTTP Server.
 let io = require("socket.io")(http); //Initialize socket.io with the Node HTTP Server.
 
 /**
+ * Use the mongoose npm to connect to the mongo db database.
+ */
+let mongoose = require("mongoose");
+const { sendStatus } = require("express/lib/response");
+
+/**
  * The express.static() function is a built-in middleware function in Express.
  * It serves static files and is based on serve-static
  */
@@ -20,13 +26,34 @@ app.use(express.static(__dirname));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-let messages = [];
+/**
+ * Please use your mongo db connection string as a part of the configuration.
+ * I have removed my connection string for security reasons.
+ *
+ * NOTE: Additionaly, in production hidden in a configuration file that is safe.
+ */
+let dbUrl = "";
+
+/**
+ * Model definition to store our message to the database.
+ */
+let Message = mongoose.model("Message", {
+  name: String,
+  message: String,
+});
 
 /**
  * A HTTP get method that sents all the messages stored in the message collection.
  */
 app.get("/messages", (req, res) => {
-  res.send(messages);
+  /**
+   * {} => Indicates all the messages from the database.
+   * (err, messages) => This is a call back function with the data or error response.
+   */
+  Message.find({}, (err, messages) => {
+    if (err) sendStatus(500);
+    res.send(messages);
+  });
 });
 
 /**
@@ -34,19 +61,41 @@ app.get("/messages", (req, res) => {
  * Additionally, it informs all the clients using socket.io to cascade the new message.
  */
 app.post("/message", (req, res) => {
-  messages.push(req.body);
-  /**
-   * Update the chat message to all the client.
-   */
-  io.emit("message", req.body);
-  res.sendStatus(200);
+  let message = new Message(req.body);
+  message.save((err) => {
+    if (err) {
+      console.log(
+        "Unable to save the information to the database. Please find the error appended : ",
+        err
+      );
+      sendStatus(500);
+    } else {
+      /**
+       * Update the chat message to all the client.
+       */
+      io.emit("message", req.body);
+      res.sendStatus(200);
+    }
+  });
 });
 
 /**
  * The event that is fired when a new client has joined the chat.
  */
 io.on("connection", (socket) => {
-  console.log("A user connected");
+  //console.log("A user connected");
+});
+
+/**
+ * Connect to the Mongo DB database
+ */
+mongoose.connect(dbUrl, (err) => {
+  if (!err) console.log("Application connected to Mongo DB Cloud");
+  else
+    console.log(
+      "Unable to connect to Mongo DB Cloud. Please find the error appended : ",
+      err
+    );
 });
 
 /**

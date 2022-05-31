@@ -33,6 +33,9 @@
     <script defer>
       let socket = io();
 
+      let backgroundColorCollection = ["bg-secondary", "bg-primary"];
+      let isAlternateColor = false;
+
       $(() => {
         //When the document is ready
         $("#send").click(() => {
@@ -67,7 +70,9 @@
         }
 
         $("#messages").append(
-          `<h4> ${message.name} </h4> <p> ${message.message}</p>`
+          `<div class="p-5 ${applyDynamicBackgroundColor()} text-white border rounded-3 chat-text-container">
+            <h4> ${message.name} </h4> <p> ${message.message}</p>
+           </div>`
         );
       }
 
@@ -91,6 +96,18 @@
           data.forEach(addMessage);
         });
       }
+
+      /**
+       * Alternate the background color for each message by selecting the bootstrap class dynamically.
+       * */
+      function applyDynamicBackgroundColor() {
+        let chatBackgroundColor = backgroundColorCollection[0];
+        isAlternateColor = !isAlternateColor;
+        isAlternateColor
+          ? (chatBackgroundColor = backgroundColorCollection[1])
+          : (chatBackgroundColor = backgroundColorCollection[0]);
+        return chatBackgroundColor;
+      }
     </script>
   </head>
   <body>
@@ -111,10 +128,7 @@
             <br />
             <button id="send" class="btn btn-outline-light">Send</button>
           </div>
-          <div
-            id="messages"
-            class="p-5 bg-secondary text-white border rounded-3 chat-text-container hide-container"
-          ></div>
+          <div id="messages" class="hide-container"></div>
         </div>
       </div>
     </div>
