@@ -58,25 +58,32 @@ app.get("/messages", (req, res) => {
 });
 
 /**
+ * A HTTP get endpoint that gets specific messages from a user stored in the message collection.
+ */
+app.get("/messages/:user", (req, res) => {
+  let user = req.params.user;
+  Message.find({ name: user }, (err, messages) => {
+    if (err) sendStatus(500);
+    res.send(messages);
+  });
+});
+
+/**
  * An HTTP post method that handles a new message sent by a client by adding it to a message collection.
  * Additionally, it informs all the clients using socket.io to cascade the new message.
  */
 app.post("/message", async (req, res) => {
-  let message = new Message(req.body);
-  let savedMessage = await message.save();
-  let censored = await Message.findOne({ message: "badword" }); // Filter any bad words here
-  if (censored) await Message.deleteOne({ _id: censored.id });
-  else io.emit("message", req.body); // Update the chat message to all the client.
-  res.sendStatus(200);
-
-  // .catch((err) => {
-  //   console.log(
-  //     "Unable to save the information to the database. Please find the error appended : ",
-  //     err
-  //   );
-  //   res.sendStatus(500);
-  //   return console.error(err);
-  // });
+  try {
+    let message = new Message(req.body);
+    let savedMessage = await message.save();
+    let censored = await Message.findOne({ message: "badword" }); // Filter any bad words here
+    if (censored) await Message.deleteOne({ _id: censored.id });
+    else io.emit("message", req.body); // Update the chat message to all the client.
+    res.sendStatus(200);
+  } catch (error) {
+    res.sendStatus(500);
+    return console.error(error);
+  }
 });
 
 /**
